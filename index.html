@@ -5,20 +5,11 @@
   <title>Today, You Are Safe – Alzheimer’s Comfort Card</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <!-- html2canvas + jsPDF (for PDF download) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
-    integrity="sha512-BNa5lK8wBxQqvLADLYiix4Jf+2NRdL6Nq0vCIB2N9IOppBI3CT6I0Qq5lV2T2vtU+QO1h3gS82oQdQ0i5rFZMA=="
-    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
-    integrity="sha512-/FJQ24S5ae1b+0KoeCwG7bsmc3RZFVmx5nLL6VRgg2CdyiZjrz8C1kXxiOluLnarFBO0HEBDyo21lT8z8WRAHQ=="
-    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
   <style>
     :root {
       --bg: #020617;
       --panel: rgba(15, 23, 42, 0.95);
       --accent: #38bdf8;
-      --accent-soft: rgba(56, 189, 248, 0.15);
       --card-bg: #f9fafb;
       --text-main: #020617;
       --muted: #64748b;
@@ -143,15 +134,6 @@
       box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.55);
     }
 
-    .input-row {
-      display: flex;
-      gap: 8px;
-    }
-
-    .input-row > div {
-      flex: 1;
-    }
-
     .helper-text {
       font-size: 0.78rem;
       color: #9ca3af;
@@ -225,14 +207,6 @@
       opacity: 0.9;
     }
 
-    .error {
-      margin-top: 6px;
-      font-size: 0.78rem;
-      color: #fecaca;
-    }
-
-    /* RIGHT / PREVIEW */
-
     .preview-wrapper {
       display: flex;
       flex-direction: column;
@@ -266,17 +240,6 @@
       color: var(--text-main);
     }
 
-    .card-outer::before {
-      content: "";
-      position: absolute;
-      inset: -120px;
-      background:
-        radial-gradient(circle at 10% 0%, rgba(56, 189, 248, 0.18) 0, transparent 55%),
-        radial-gradient(circle at 80% 0%, rgba(56, 189, 248, 0.16) 0, transparent 52%);
-      opacity: 0.9;
-      pointer-events: none;
-    }
-
     .card-inner {
       position: relative;
       width: 100%;
@@ -284,7 +247,7 @@
       border-radius: 16px;
       border: 1px solid rgba(148, 163, 184, 0.5);
       padding: 18px 20px 14px;
-      background: linear-gradient(to bottom, rgba(255, 255, 255, 0.9), #f9fafb);
+      background: white;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -376,23 +339,53 @@
     .heart-icon {
       font-size: 0.85rem;
     }
+
+    /* PRINT MODE — show ONLY the card */
+    @media print {
+      body {
+        background: white;
+        padding: 0;
+        margin: 0;
+      }
+      .app-shell,
+      .left,
+      .preview-title,
+      .subtitle,
+      .pill,
+      .helper-text,
+      .buttons,
+      .footer-note,
+      .tiny-note,
+      .hint-chip {
+        display: none !important;
+      }
+      #pdfCard {
+        margin: 0 auto;
+      }
+      .card-outer {
+        box-shadow: none;
+      }
+    }
   </style>
 </head>
+
 <body>
   <div class="app-shell">
-    <!-- LEFT: INPUTS -->
+    <!-- LEFT: INPUT -->
     <div class="left">
       <h1>
         <span class="emoji">🌙</span>
         <span>“Today, You Are Safe” Card</span>
       </h1>
+
       <p class="subtitle">
-        A free, printable bedside card for people living with Alzheimer’s or dementia.
-        Simple words that bring comfort: <strong>“You are safe. You are loved. I am here.”</strong>
+        A free comfort card for Alzheimer’s or dementia care.  
+        Simple words that reduce anxiety and bring peace.
       </p>
+
       <div class="pill">
         <div class="pill-dot"></div>
-        <span>Fill in the names → Download → Print & place by the bedside</span>
+        <span>Fill in → Print / Save as PDF → Place by bedside</span>
       </div>
 
       <label for="patientName">Name of your loved one (optional)</label>
@@ -402,78 +395,57 @@
       <input id="fromName" type="text" placeholder="e.g., Love, Akriti • Love, Your Family" />
 
       <p class="helper-text">
-        This page does not store or send any information. Everything stays on your device.
-        You can re-create the card anytime.
+        This page never stores any information. Everything stays on your device.
       </p>
 
       <div class="buttons">
-        <button class="primary" id="updatePreviewBtn">
-          ✨ Update Preview
-        </button>
-        <button class="secondary" id="downloadPdfBtn">
-          📄 Download as PDF
-        </button>
-        <span class="hint-chip">Print on A4 / Letter in portrait and place by the bed.</span>
+        <button class="primary" id="updatePreviewBtn">✨ Update Preview</button>
+        <button class="secondary" id="printBtn">🖨️ Print / Save as PDF</button>
+        <span class="hint-chip">On laptop: choose “Save as PDF” in the print dialog.</span>
       </div>
 
       <p class="footer-note">
-        Created with care in <span>Downtown Cleveland, Ohio</span> by
-        <span>Nihit Navroz Mehta</span> • Free for families & caregivers.
-      </p>
-      <p class="tiny-note">
-        Tip: Read this card out loud in a calm voice, especially in the evening or during anxiety.
+        Created in <span>Downtown Cleveland, Ohio</span> by <span>Nihit Navroz Mehta</span>.
       </p>
 
-      <div class="error" id="errorMessage" style="display:none;"></div>
+      <p class="tiny-note">
+        Tip: Reading this card aloud reduces evening anxiety.
+      </p>
     </div>
 
-    <!-- RIGHT: PREVIEW / PDF CARD -->
+    <!-- RIGHT: PREVIEW -->
     <div class="right">
       <div class="preview-wrapper">
         <div class="preview-title">
           <span class="emoji">👀</span>
-          <span>Preview (this is exactly what will go into the PDF)</span>
+          <span>Preview (this is exactly what prints)</span>
         </div>
 
         <div class="card-outer" id="pdfCard">
           <div class="card-inner">
             <div class="card-header">
-              <div class="card-tag">Comfort Card</div>
+              <div class="card-tag">COMFORT CARD</div>
               <div class="card-title">Today, You Are Safe</div>
-              <div class="name-pill" id="namePill">
-                <span id="previewNameLabel">For you, with love</span> <span>🕊️</span>
+              <div class="name-pill">
+                <span id="previewNameLabel">For you, with love</span> 🕊️
               </div>
             </div>
 
             <div class="card-body">
-              <div class="card-line" id="line1">
-                Today, you are safe.
-              </div>
-              <div class="card-line soft" id="line2">
-                You are loved.
-              </div>
-              <div class="card-line soft" id="line3">
-                You don’t need to remember anything.
-              </div>
-              <div class="card-line faint" id="line4">
-                I am here.
-              </div>
+              <div class="card-line">Today, you are safe.</div>
+              <div class="card-line soft">You are loved.</div>
+              <div class="card-line soft">You don’t need to remember anything.</div>
+              <div class="card-line faint">I am here.</div>
             </div>
 
             <div class="card-footer">
-              <div>
-                <div class="from-text" id="fromText">
-                  Love, <span class="from-name">Your family</span>
-                </div>
+              <div class="from-text">
+                Love, <span class="from-name" id="fromText">Your family</span>
               </div>
-              <div class="small-note">
-                <span class="heart-icon">💙</span>
-                You are not alone.
-              </div>
+              <div class="small-note">💙 You are not alone.</div>
             </div>
           </div>
         </div>
-        <!-- end card -->
       </div>
     </div>
   </div>
@@ -481,103 +453,26 @@
   <script>
     const patientNameInput = document.getElementById("patientName");
     const fromNameInput = document.getElementById("fromName");
-
     const previewNameLabel = document.getElementById("previewNameLabel");
     const fromText = document.getElementById("fromText");
 
-    const updatePreviewBtn = document.getElementById("updatePreviewBtn");
-    const downloadPdfBtn = document.getElementById("downloadPdfBtn");
-    const errorMessage = document.getElementById("errorMessage");
-    const pdfCard = document.getElementById("pdfCard");
-
-    function safeText(v, fallback) {
-      const t = (v || "").trim();
-      return t.length ? t : fallback;
-    }
-
     function updatePreview() {
-      const patientName = patientNameInput.value.trim();
-      const from = safeText(fromNameInput.value, "Your family");
+      const p = patientNameInput.value.trim();
+      const f = fromNameInput.value.trim() || "Your family";
 
-      if (patientName.length > 0) {
-        previewNameLabel.textContent = "For " + patientName;
-      } else {
-        previewNameLabel.textContent = "For you, with love";
-      }
-
-      fromText.innerHTML = 'Love, <span class="from-name">' +
-        from.replace(/</g, "&lt;").replace(/>/g, "&gt;") +
-        "</span>";
-
-      errorMessage.style.display = "none";
+      previewNameLabel.textContent = p ? "For " + p : "For you, with love";
+      fromText.textContent = f;
     }
 
-    function downloadPDF() {
-      // Not strictly required, but at least encourage a signature line
-      if (!fromNameInput.value.trim()) {
-        errorMessage.textContent =
-          "You can still download, but adding a name to the 'Love, …' line often makes the card feel more personal.";
-        errorMessage.style.display = "block";
-      } else {
-        errorMessage.style.display = "none";
-      }
-
+    document.getElementById("updatePreviewBtn").addEventListener("click", updatePreview);
+    document.getElementById("printBtn").addEventListener("click", () => {
       updatePreview();
+      window.print();
+    });
 
-      const jsPDFLib = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
-      if (!jsPDFLib) {
-        errorMessage.textContent =
-          "PDF library failed to load. Please check your internet connection and refresh the page.";
-        errorMessage.style.display = "block";
-        return;
-      }
+    patientNameInput.addEventListener("input", updatePreview);
+    fromNameInput.addEventListener("input", updatePreview);
 
-      const scale = 2;
-      html2canvas(pdfCard, {
-        scale,
-        backgroundColor: "#f9fafb"
-      })
-        .then((canvas) => {
-          const imgData = canvas.toDataURL("image/png");
-          const pdf = new jsPDFLib({
-            orientation: "portrait",
-            unit: "pt",
-            format: "a4"
-          });
-
-          const pageWidth = pdf.internal.pageSize.getWidth();
-          const pageHeight = pdf.internal.pageSize.getHeight();
-
-          const imgWidth = pageWidth * 0.8;
-          const imgHeight = (canvas.height * imgWidth) / canvas.width;
-          const x = (pageWidth - imgWidth) / 2;
-          const y = (pageHeight - imgHeight) / 2;
-
-          pdf.addImage(imgData, "PNG", x, y, imgWidth, imgHeight);
-
-          const nameForFile = patientNameInput.value.trim() || "LovedOne";
-          const filename = "Today_You_Are_Safe_" +
-            nameForFile.replace(/\s+/g, "_") +
-            ".pdf";
-
-          pdf.save(filename);
-        })
-        .catch((err) => {
-          console.error(err);
-          errorMessage.textContent =
-            "Something went wrong creating the PDF. Please try again.";
-          errorMessage.style.display = "block";
-        });
-    }
-
-    updatePreviewBtn.addEventListener("click", updatePreview);
-    downloadPdfBtn.addEventListener("click", downloadPDF);
-
-    [patientNameInput, fromNameInput].forEach((el) =>
-      el.addEventListener("input", updatePreview)
-    );
-
-    // Initial render
     updatePreview();
   </script>
 </body>
