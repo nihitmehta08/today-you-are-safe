@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Today, You Are Safe – Alzheimer’s Comfort Card</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- html2canvas + jsPDF (for PDF download) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+    integrity="sha512-BNa5lK8wBxQqvLADLYiix4Jf+2NRdL6Nq0vCIB2N9IOppBI3CT6I0Qq5lV2T2vtU+QO1h3gS82oQdQ0i5rFZMA=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+    integrity="sha512-/FJQ24S5ae1b+0KoeCwG7bsmc3RZFVmx5nLL6VRgg2CdyiZjrz8C1kXxiOluLnarFBO0HEBDyo21lT8z8WRAHQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <style>
+    :root {
+      --bg: #020617;
+      --panel: rgba(15, 23, 42, 0.95);
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.15);
+      --card-bg: #f9fafb;
+      --text-main: #020617;
+      --muted: #64748b;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top, #0f172a, #020617),
+        #020617;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      color: #e5e7eb;
+    }
+
+    .app-shell {
+      max-width: 1100px;
+      width: 100%;
+      background: var(--panel);
+      border-radius: 18px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.75);
+      padding: 20px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      gap: 18px;
+    }
+
+    @media (max-width: 860px) {
+      .app-shell {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .left {
+      padding: 8px;
+      border-right: 1px solid rgba(148, 163, 184, 0.35);
+    }
+
+    @media (max-width: 860px) {
+      .left {
+        border-right: none;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.35);
+      }
+    }
+
+    .right {
+      padding: 8px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.7rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: 0.02em;
+    }
+
+    h1 span.emoji {
+      font-size: 1.5rem;
+    }
+
+    .subtitle {
+      margin-top: 6px;
+      font-size: 0.93rem;
+      color: #e5e7eb;
+      max-width: 480px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: rgba(30, 64, 175, 0.35);
+      font-size: 0.72rem;
+      margin-top: 8px;
+    }
+
+    .pill-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 6px rgba(34, 197, 94, 0.9);
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      margin-top: 10px;
+      margin-bottom: 4px;
+      color: #e5e7eb;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      padding: 8px 10px;
+      font-size: 0.86rem;
+      background: rgba(15, 23, 42, 0.7);
+      color: #f9fafb;
+      outline: none;
+    }
+
+    input::placeholder {
+      color: #94a3b8;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.55);
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .input-row > div {
+      flex: 1;
+    }
+
+    .helper-text {
+      font-size: 0.78rem;
+      color: #9ca3af;
+      margin-top: 6px;
+      max-width: 460px;
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+      align-items: center;
+    }
+
+    button {
+      border-radius: 999px;
+      border: none;
+      padding: 8px 16px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: transform 0.06s ease, box-shadow 0.08s ease, background 0.15s ease;
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, var(--accent), #0ea5e9);
+      color: #020617;
+      font-weight: 600;
+      box-shadow: 0 10px 22px rgba(56, 189, 248, 0.55);
+    }
+
+    button.primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 30px rgba(56, 189, 248, 0.7);
+    }
+
+    button.secondary {
+      background: rgba(15, 23, 42, 0.95);
+      color: #e5e7eb;
+      border: 1px solid rgba(148, 163, 184, 0.9);
+    }
+
+    button.secondary:hover {
+      background: rgba(30, 64, 175, 0.85);
+      border-color: rgba(129, 140, 248, 0.95);
+    }
+
+    .hint-chip {
+      font-size: 0.72rem;
+      color: #9ca3af;
+    }
+
+    .footer-note {
+      margin-top: 10px;
+      font-size: 0.72rem;
+      color: #9ca3af;
+    }
+
+    .footer-note span {
+      color: #e5e7eb;
+      font-weight: 500;
+    }
+
+    .tiny-note {
+      margin-top: 4px;
+      font-size: 0.78rem;
+      color: #cbd5f5;
+      opacity: 0.9;
+    }
+
+    .error {
+      margin-top: 6px;
+      font-size: 0.78rem;
+      color: #fecaca;
+    }
+
+    /* RIGHT / PREVIEW */
+
+    .preview-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .preview-title {
+      font-size: 0.95rem;
+      color: #e5e7eb;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+
+    .preview-title span.emoji {
+      font-size: 1rem;
+    }
+
+    .card-outer {
+      width: 100%;
+      max-width: 450px;
+      aspect-ratio: 3 / 4;
+      background: radial-gradient(circle at top, #e0f2fe, #f9fafb);
+      border-radius: 20px;
+      padding: 18px 18px 16px;
+      box-shadow: 0 18px 36px rgba(15, 23, 42, 0.7);
+      position: relative;
+      overflow: hidden;
+      color: var(--text-main);
+    }
+
+    .card-outer::before {
+      content: "";
+      position: absolute;
+      inset: -120px;
+      background:
+        radial-gradient(circle at 10% 0%, rgba(56, 189, 248, 0.18) 0, transparent 55%),
+        radial-gradient(circle at 80% 0%, rgba(56, 189, 248, 0.16) 0, transparent 52%);
+      opacity: 0.9;
+      pointer-events: none;
+    }
+
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: 16px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      padding: 18px 20px 14px;
+      background: linear-gradient(to bottom, rgba(255, 255, 255, 0.9), #f9fafb);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card-header {
+      text-align: center;
+    }
+
+    .card-tag {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: #64748b;
+    }
+
+    .card-title {
+      margin-top: 4px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .name-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.7);
+      font-size: 0.78rem;
+      color: #0369a1;
+      margin-top: 6px;
+    }
+
+    .card-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 10px 6px;
+      gap: 4px;
+    }
+
+    .card-line {
+      font-size: 1rem;
+      color: #020617;
+    }
+
+    .card-line.soft {
+      font-size: 0.95rem;
+      color: #1e293b;
+    }
+
+    .card-line.faint {
+      font-size: 0.9rem;
+      color: #475569;
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      font-size: 0.74rem;
+      color: #64748b;
+      margin-top: 4px;
+      gap: 6px;
+    }
+
+    .from-text {
+      font-style: italic;
+      color: #0f172a;
+    }
+
+    .from-name {
+      font-weight: 600;
+      color: #0369a1;
+    }
+
+    .small-note {
+      font-size: 0.7rem;
+      color: #94a3b8;
+      text-align: right;
+    }
+
+    .heart-icon {
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- LEFT: INPUTS -->
+    <div class="left">
+      <h1>
+        <span class="emoji">🌙</span>
+        <span>“Today, You Are Safe” Card</span>
+      </h1>
+      <p class="subtitle">
+        A free, printable bedside card for people living with Alzheimer’s or dementia.
+        Simple words that bring comfort: <strong>“You are safe. You are loved. I am here.”</strong>
+      </p>
+      <div class="pill">
+        <div class="pill-dot"></div>
+        <span>Fill in the names → Download → Print & place by the bedside</span>
+      </div>
+
+      <label for="patientName">Name of your loved one (optional)</label>
+      <input id="patientName" type="text" placeholder="e.g., Dad, Nani, Grandpa Ravi" />
+
+      <label for="fromName">Signature line (“Love, …”)</label>
+      <input id="fromName" type="text" placeholder="e.g., Love, Akriti • Love, Your Family" />
+
+      <p class="helper-text">
+        This page does not store or send any information. Everything stays on your device.
+        You can re-create the card anytime.
+      </p>
+
+      <div class="buttons">
+        <button class="primary" id="updatePreviewBtn">
+          ✨ Update Preview
+        </button>
+        <button class="secondary" id="downloadPdfBtn">
+          📄 Download as PDF
+        </button>
+        <span class="hint-chip">Print on A4 / Letter in portrait and place by the bed.</span>
+      </div>
+
+      <p class="footer-note">
+        Created with care in <span>Downtown Cleveland, Ohio</span> by
+        <span>Nihit Navroz Mehta</span> • Free for families & caregivers.
+      </p>
+      <p class="tiny-note">
+        Tip: Read this card out loud in a calm voice, especially in the evening or during anxiety.
+      </p>
+
+      <div class="error" id="errorMessage" style="display:none;"></div>
+    </div>
+
+    <!-- RIGHT: PREVIEW / PDF CARD -->
+    <div class="right">
+      <div class="preview-wrapper">
+        <div class="preview-title">
+          <span class="emoji">👀</span>
+          <span>Preview (this is exactly what will go into the PDF)</span>
+        </div>
+
+        <div class="card-outer" id="pdfCard">
+          <div class="card-inner">
+            <div class="card-header">
+              <div class="card-tag">Comfort Card</div>
+              <div class="card-title">Today, You Are Safe</div>
+              <div class="name-pill" id="namePill">
+                <span id="previewNameLabel">For you, with love</span> <span>🕊️</span>
+              </div>
+            </div>
+
+            <div class="card-body">
+              <div class="card-line" id="line1">
+                Today, you are safe.
+              </div>
+              <div class="card-line soft" id="line2">
+                You are loved.
+              </div>
+              <div class="card-line soft" id="line3">
+                You don’t need to remember anything.
+              </div>
+              <div class="card-line faint" id="line4">
+                I am here.
+              </div>
+            </div>
+
+            <div class="card-footer">
+              <div>
+                <div class="from-text" id="fromText">
+                  Love, <span class="from-name">Your family</span>
+                </div>
+              </div>
+              <div class="small-note">
+                <span class="heart-icon">💙</span>
+                You are not alone.
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- end card -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const patientNameInput = document.getElementById("patientName");
+    const fromNameInput = document.getElementById("fromName");
+
+    const previewNameLabel = document.getElementById("previewNameLabel");
+    const fromText = document.getElementById("fromText");
+
+    const updatePreviewBtn = document.getElementById("updatePreviewBtn");
+    const downloadPdfBtn = document.getElementById("downloadPdfBtn");
+    const errorMessage = document.getElementById("errorMessage");
+    const pdfCard = document.getElementById("pdfCard");
+
+    function safeText(v, fallback) {
+      const t = (v || "").trim();
+      return t.length ? t : fallback;
+    }
+
+    function updatePreview() {
+      const patientName = patientNameInput.value.trim();
+      const from = safeText(fromNameInput.value, "Your family");
+
+      if (patientName.length > 0) {
+        previewNameLabel.textContent = "For " + patientName;
+      } else {
+        previewNameLabel.textContent = "For you, with love";
+      }
+
+      fromText.innerHTML = 'Love, <span class="from-name">' +
+        from.replace(/</g, "&lt;").replace(/>/g, "&gt;") +
+        "</span>";
+
+      errorMessage.style.display = "none";
+    }
+
+    function downloadPDF() {
+      // Not strictly required, but at least encourage a signature line
+      if (!fromNameInput.value.trim()) {
+        errorMessage.textContent =
+          "You can still download, but adding a name to the 'Love, …' line often makes the card feel more personal.";
+        errorMessage.style.display = "block";
+      } else {
+        errorMessage.style.display = "none";
+      }
+
+      updatePreview();
+
+      const jsPDFLib = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+      if (!jsPDFLib) {
+        errorMessage.textContent =
+          "PDF library failed to load. Please check your internet connection and refresh the page.";
+        errorMessage.style.display = "block";
+        return;
+      }
+
+      const scale = 2;
+      html2canvas(pdfCard, {
+        scale,
+        backgroundColor: "#f9fafb"
+      })
+        .then((canvas) => {
+          const imgData = canvas.toDataURL("image/png");
+          const pdf = new jsPDFLib({
+            orientation: "portrait",
+            unit: "pt",
+            format: "a4"
+          });
+
+          const pageWidth = pdf.internal.pageSize.getWidth();
+          const pageHeight = pdf.internal.pageSize.getHeight();
+
+          const imgWidth = pageWidth * 0.8;
+          const imgHeight = (canvas.height * imgWidth) / canvas.width;
+          const x = (pageWidth - imgWidth) / 2;
+          const y = (pageHeight - imgHeight) / 2;
+
+          pdf.addImage(imgData, "PNG", x, y, imgWidth, imgHeight);
+
+          const nameForFile = patientNameInput.value.trim() || "LovedOne";
+          const filename = "Today_You_Are_Safe_" +
+            nameForFile.replace(/\s+/g, "_") +
+            ".pdf";
+
+          pdf.save(filename);
+        })
+        .catch((err) => {
+          console.error(err);
+          errorMessage.textContent =
+            "Something went wrong creating the PDF. Please try again.";
+          errorMessage.style.display = "block";
+        });
+    }
+
+    updatePreviewBtn.addEventListener("click", updatePreview);
+    downloadPdfBtn.addEventListener("click", downloadPDF);
+
+    [patientNameInput, fromNameInput].forEach((el) =>
+      el.addEventListener("input", updatePreview)
+    );
+
+    // Initial render
+    updatePreview();
+  </script>
+</body>
+</html>
